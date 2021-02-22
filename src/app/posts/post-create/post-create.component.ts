@@ -12,6 +12,8 @@ export class PostCreateComponent {
   enteredTitle = "";
   enteredContent = "";
 
+  isLoading = false;
+  
   constructor(public postsService: PostsService) {}
 
   onAddPost(form: NgForm) {
