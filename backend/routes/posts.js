@@ -23,11 +23,11 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         const name = file.originalname.toLocaleLowerCase().split(' ').join('-');
         const ext = MIME_TYPE_MAP[file.mimetype];
-        cb(null, name + '-' + Date.now() + '.' +ext)
+        cb(null, name + '-' + Date.now() + '.' + ext)
     }
 });
 
-router.post("/api/posts", multer({storage: storage}).single("image"), (req, res, next) => {
+router.post("/api/posts", multer({ storage: storage }).single("image"), (req, res, next) => {
     const url = req.protocol + '://' + req.get("host");
     const post = new Post({
         title: req.body.title,
@@ -51,8 +51,15 @@ router.get('/api/posts', (req, res, next) => {
     //     { id: '1001', title: '第一篇博客', content: 'this is coming from the server' },
     //     { id: '1002', title: '第二篇博客', content: 'this is coming from the server' }
     // ]
-    Post.find()
-        .then(posts => {
+    const pageSize = req.query.pageSize;
+    const currentPage = req.query.page;
+    const postQuery = Post.find();
+    if (pageSize && currentPage) {
+        postQuery
+            .skip(pageSize * (currentPage - 1))
+            .limit(pageSize);
+    }
+    postQuery.then(posts => {
             res.status(200).json({
                 message: 'success',
                 posts: posts
