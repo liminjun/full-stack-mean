@@ -23,8 +23,8 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
 });
-
-app.use(postRoutes);
+app.use('/', express.static(__dirname + '/public'));
+app.use("/api/posts", postRoutes);
 
 
 module.exports = app;

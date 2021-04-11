@@ -1,4 +1,3 @@
-const { cbrt, MIN_SAFE_INTEGER } = require('core-js/fn/number');
 const express = require('express');
 const multer = require("multer");
 
@@ -16,9 +15,9 @@ const storage = multer.diskStorage({
         const isValid = MIME_TYPE_MAP[file.mimetype];
         let error = new Error('Invalid mine type');
         if (isValid) {
-            error = nll;
+            error = null;
         }
-        cbrt(error, "backend/images");
+        cb(error, "backend/images");
     },
     filename: (req, file, cb) => {
         const name = file.originalname.toLocaleLowerCase().split(' ').join('-');
@@ -27,7 +26,7 @@ const storage = multer.diskStorage({
     }
 });
 
-router.post("/api/posts", multer({ storage: storage }).single("image"), (req, res, next) => {
+router.post("", multer({ storage: storage }).single("image"), (req, res, next) => {
     const url = req.protocol + '://' + req.get("host");
     const post = new Post({
         title: req.body.title,
@@ -44,31 +43,69 @@ router.post("/api/posts", multer({ storage: storage }).single("image"), (req, re
             }
         });
     });
-
 })
-router.get('/api/posts', (req, res, next) => {
+router.put(
+    "/:id",
+    multer({ storage: storage }).single("image"),
+    (req, res, next) => {
+      let imagePath = req.body.imagePath;
+      if (req.file) {
+        const url = req.protocol + "://" + req.get("host");
+        imagePath = url + "/images/" + req.file.filename;
+      }
+      const post = new Post({
+        _id: req.body.id,
+        title: req.body.title,
+        content: req.body.content,
+        imagePath: imagePath
+      });
+      console.log(post);
+      Post.updateOne({ _id: req.params.id }, post).then(result => {
+        res.status(200).json({ message: "Update successful!" });
+      });
+    }
+  );
+router.get('', (req, res, next) => {
     // const posts = [
     //     { id: '1001', title: '第一篇博客', content: 'this is coming from the server' },
     //     { id: '1002', title: '第二篇博客', content: 'this is coming from the server' }
     // ]
-    const pageSize = req.query.pageSize;
-    const currentPage = req.query.page;
+    const pageSize = +req.query.pageSize;
+    const currentPage = +req.query.page;
     const postQuery = Post.find();
+    let fetchPosts;
     if (pageSize && currentPage) {
         postQuery
             .skip(pageSize * (currentPage - 1))
             .limit(pageSize);
     }
-    postQuery.then(posts => {
+    postQuery
+        .then(documents => {
+            fetchPosts = documents;
+            return Post.count();
+        })
+        .then(count => {
             res.status(200).json({
                 message: 'success',
-                posts: posts
+                posts: fetchPosts,
+                maxPosts: count
             });
         });
 
 });
 
-router.delete("/api/posts/:id", (req, res, next) => {
+router.get("/:id", (req, res, next) => {
+    Post.findById(req.params.id).then(post => {
+      if (post) {
+        res.status(200).json(post);
+      } else {
+        res.status(404).json({ message: "Post not found!" });
+      }
+    });
+  });
+
+  
+router.delete("/:id", (req, res, next) => {
     console.log(req.params.id);
     Post.deleteOne({
         _id: req.params.id
