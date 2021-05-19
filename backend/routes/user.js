@@ -55,7 +55,9 @@ router.post("/login", (req, res, next) => {
         }, 'secret_this_should_be_longer', {expiresIn: '1h', });
         res.status(200).json({
             token: token,
+            exiresIn: '3600',
             message: 'login success.'
+
         })
         
     })
