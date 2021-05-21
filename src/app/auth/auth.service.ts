@@ -40,8 +40,7 @@ export class AuthService {
         this.http.post<{token: string, expiresIn: number}>("http://localhost:3000/api/user/login", authData)
         .subscribe(response => {
             console.log(response);
-            const token = response.token;
-            debugger
+            const token = response.token;   
             this.token = token;
             if (token) {
                 const expiresInDuration = response.expiresIn;
@@ -58,12 +57,15 @@ export class AuthService {
     }
     autoAuthUser() {
         const authInformation = this.getAuthData();
+        if (!authInformation) {
+            return;
+        }
         const now= new Date();
-        const isInFuture = authInformation.expirationDate > now;
-        if (isInFuture) {
+        const expiresIn = authInformation.expirationDate.getTime() - now.getTime()
+        if (expiresIn > 0) {
             this.token = authInformation.token;
             this.isAuthenticated = true;
-            this.setAuthTimer(ex)
+            this.setAuthTimer(expiresIn / 1000);
             this.authStatusListener.next(true);
         }
     }
@@ -76,6 +78,7 @@ export class AuthService {
         clearTimeout(this.tokenTimer);
     }
     private setAuthTimer(duration: number) {
+        console.log("Setting timer: " + duration);
         setTimeout(()=>{
             this.logout();
         }, duration * 1000);
