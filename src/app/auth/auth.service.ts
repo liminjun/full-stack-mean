@@ -39,6 +39,9 @@ export class AuthService {
         .subscribe(response => {
             console.log(response);
             this.router.navigate(['/']);
+        }, error => {
+            this.authStatusListener.next(false);
+            console.log(error);
         });
     }
     login(email: string, password: string) {
@@ -64,6 +67,8 @@ export class AuthService {
                 this.saveAuthData(token,expirationDate, this.userId)
                 this.router.navigate(['/'])
             }
+        }, error => {
+            this.authStatusListener.next(false);
         });
     }
     autoAuthUser() {
