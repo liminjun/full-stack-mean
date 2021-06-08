@@ -1,0 +1,6 @@
+{
+    "env": {
+        "MONGODB_PW": "h0tlsbOFcFFqfk3c",
+        "JWT_KEY": "secret_this_should_be_longer"
+    }
+}
