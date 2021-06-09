@@ -4,4 +4,8 @@ textarea {
 }
 mat-spinner {
   margin: 0 auto;
+} 
+.auth-card {
+  max-width: 500px;
+  margin: 10% auto;
 }
